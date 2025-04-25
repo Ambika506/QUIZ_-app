@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Animated Quiz App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #8e2de2, #4a00e0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+
+    .quiz-container {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .question {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .answer-btn {
+      padding: 0.8rem;
+      background: #4a00e0;
+      border: 2px solid #fff;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .answer-btn:hover {
+      background: #8e2de2;
+    }
+
+    .timer, .score {
+      font-size: 1rem;
+      margin-bottom: 0.8rem;
+      text-align: right;
+    }
+
+    .next-btn {
+      display: none;
+      margin-top: 1.5rem;
+      background: #00c9a7;
+      color: #000;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .next-btn:hover {
+      background: #00b295;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <div class="timer" id="timer">Time: 30</div>
+    <div class="score" id="score">Score: 0</div>
+    <div class="question" id="question">Loading question...</div>
+    <div class="answers" id="answers"></div>
+    <button class="next-btn" id="nextBtn">Next</button>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "What is the capital of France?",
+        answers: ["Berlin", "Madrid", "Paris", "Lisbon"],
+        correct: 2
+      },
+      {
+        question: "Which language runs in a web browser?",
+        answers: ["Java", "C", "Python", "JavaScript"],
+        correct: 3
+      },
+      {
+        question: "What does CSS stand for?",
+        answers: ["Central Style Sheets", "Cascading Style Sheets", "Coded Style Sheets", "Computer Style Sheets"],
+        correct: 1
+      }
+    ];
+
+    const questionEl = document.getElementById("question");
+    const answersEl = document.getElementById("answers");
+    const nextBtn = document.getElementById("nextBtn");
+    const timerEl = document.getElementById("timer");
+    const scoreEl = document.getElementById("score");
+
+    let currentQuestion = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 30;
+
+    function startTimer() {
+      timeLeft = 30;
+      timerEl.textContent = `Time: ${timeLeft}`;
+      timer = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = `Time: ${timeLeft}`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          showNextQuestion();
+        }
+      }, 1000);
+    }
+
+    function showQuestion() {
+      resetState();
+      const q = questions[currentQuestion];
+      questionEl.textContent = q.question;
+
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = answer;
+        btn.classList.add("answer-btn");
+        btn.addEventListener("click", () => selectAnswer(index));
+        answersEl.appendChild(btn);
+      });
+
+      startTimer();
+    }
+
+    function resetState() {
+      clearInterval(timer);
+      answersEl.innerHTML = "";
+      nextBtn.style.display = "none";
+    }
+
+    function selectAnswer(index) {
+      const isCorrect = index === questions[currentQuestion].correct;
+      if (isCorrect) score++;
+      scoreEl.textContent = `Score: ${score}`;
+      Array.from(answersEl.children).forEach((btn, i) => {
+        btn.style.backgroundColor = i === questions[currentQuestion].correct ? "#00c9a7" : "#e74c3c";
+        btn.disabled = true;
+      });
+      clearInterval(timer);
+      nextBtn.style.display = "block";
+    }
+
+    function showNextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showScore();
+      }
+    }
+
+    function showScore() {
+      questionEl.textContent = `Quiz Completed!`;
+      answersEl.innerHTML = `<p>Your final score is ${score}/${questions.length}</p>`;
+      timerEl.style.display = "none";
+      nextBtn.style.display = "none";
+    }
+
+    nextBtn.addEventListener("click", showNextQuestion);
+
+    // Start the quiz
+    showQuestion();
+  </script>
+</body>
+</html>
